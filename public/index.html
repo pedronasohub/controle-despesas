@@ -1,312 +1,339 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HUB Custos</title>
-  <!-- PWA - Manifest e Meta Tags -->
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#4f46e5">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="HUB Custos">
-
-  <!-- Ícones (recomendado ter pelo menos 192x192 e 512x512) -->
-  <link rel="icon" href="/icon-192.png" sizes="192x192">
-  <link rel="apple-touch-icon" href="/icon-192.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    body {
-      font-family: 'Segoe UI', system-ui, sans-serif;
-    }
-
-    .card-hover:hover {
-      transform: translateY(-4px);
-      transition: all 0.3s;
-    }
-
-    .status-pago {
-      background-color: #dcfce7;
-      color: #166534;
-    }
-
-    .status-pendente {
-      background-color: #fee2e2;
-      color: #991b1b;
-    }
-
-    .despesa-card:hover {
-      box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-    }
-
-    .logo-font {
-      font-family: 'Inter', system-ui, sans-serif;
-      letter-spacing: -0.05em;
-    }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; }
+    .card-hover:hover { transform: translateY(-4px); transition: all 0.3s; }
+    .status-pago { background-color: #dcfce7; color: #166534; }
+    .status-pendente { background-color: #fee2e2; color: #991b1b; }
+    .despesa-card:hover { box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1); }
+    .logo-font { font-family: 'Inter', system-ui, sans-serif; letter-spacing: -0.05em; }
   </style>
 </head>
-
 <body class="bg-gray-50">
 
-  <div class="min-h-screen">
-    <header class="bg-gradient-to-r from-indigo-700 to-violet-700 text-white shadow-lg">
-      <div class="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
-        <div class="flex items-center gap-4">
-          <div class="w-10 h-10 bg-white rounded-2xl flex items-center justify-center text-indigo-700">
-            <i class="fas fa-chart-pie text-2xl"></i>
-          </div>
-          <div>
-            <h1 class="logo-font text-3xl font-bold tracking-tighter">HUB Custos</h1>
-            <p class="text-xs text-indigo-200 -mt-1">Controle Financeiro Inteligente</p>
-          </div>
+<div class="min-h-screen">
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-indigo-700 to-violet-700 text-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
+      <div class="flex items-center gap-4">
+        <div class="w-10 h-10 bg-white rounded-2xl flex items-center justify-center text-indigo-700">
+          <i class="fas fa-chart-pie text-2xl"></i>
         </div>
-        <button onclick="abrirModal()"
-          class="bg-white text-indigo-700 px-6 py-3 rounded-2xl font-semibold hover:bg-indigo-100 transition flex items-center gap-2 shadow-md">
-          <i class="fas fa-plus"></i>
+        <div>
+          <h1 class="logo-font text-3xl font-bold tracking-tighter">HUB Custos</h1>
+          <p id="userName" class="text-xs text-indigo-200 -mt-1"></p>
+        </div>
+      </div>
+      
+      <div class="flex items-center gap-4">
+        <button onclick="abrirModal()" 
+                class="bg-white text-indigo-700 px-6 py-3 rounded-2xl font-semibold hover:bg-indigo-100 transition flex items-center gap-2 shadow-md">
+          <i class="fas fa-plus"></i> 
           <span class="hidden sm:inline">Nova Despesa</span>
         </button>
-      </div>
-    </header>
-
-    <div class="max-w-7xl mx-auto px-6 py-8">
-      <!-- Cards Resumo -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-        <div class="bg-white rounded-3xl shadow p-6 card-hover">
-          <p class="text-gray-500 text-sm">Total Geral</p>
-          <h2 id="totalGeral" class="text-3xl font-bold text-gray-800 mt-1">R$ 0,00</h2>
-        </div>
-        <div class="bg-white rounded-3xl shadow p-6 card-hover">
-          <p class="text-gray-500 text-sm">Pendentes</p>
-          <h2 id="totalPendente" class="text-3xl font-bold text-red-600 mt-1">R$ 0,00</h2>
-        </div>
-        <div class="bg-white rounded-3xl shadow p-6 card-hover">
-          <p class="text-gray-500 text-sm">Pagas</p>
-          <h2 id="totalPago" class="text-3xl font-bold text-green-600 mt-1">R$ 0,00</h2>
-        </div>
-        <div class="bg-white rounded-3xl shadow p-6 card-hover">
-          <p class="text-gray-500 text-sm">Lançamentos</p>
-          <h2 id="qtdParcelas" class="text-3xl font-bold text-indigo-600 mt-1">0</h2>
-        </div>
-      </div>
-
-      <!-- Filtros -->
-      <div class="bg-white p-5 rounded-3xl shadow mb-8 flex flex-wrap gap-4 items-center">
-        <select id="filtroMes" onchange="filtrar()"
-          class="border border-gray-300 rounded-2xl px-5 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-          <option value="">Todos os meses</option>
-        </select>
-        <select id="filtroCategoria" onchange="filtrar()"
-          class="border border-gray-300 rounded-2xl px-5 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-          <option value="">Todas as categorias</option>
-        </select>
-        <select id="filtroStatus" onchange="filtrar()"
-          class="border border-gray-300 rounded-2xl px-5 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-          <option value="">Todos os status</option>
-          <option value="pago">Pagas</option>
-          <option value="pendente">Pendentes</option>
-        </select>
-        <button onclick="limparFiltros()" class="ml-auto text-gray-500 hover:text-red-600 flex items-center gap-2">
-          <i class="fas fa-rotate"></i> Limpar
+        <button onclick="logout()" 
+                class="text-white hover:text-indigo-100 transition flex items-center gap-2">
+          <i class="fas fa-sign-out-alt"></i>
+          <span class="hidden sm:inline">Sair</span>
         </button>
       </div>
+    </div>
+  </header>
 
-      <!-- Desktop -->
-      <div id="viewDesktop" class="hidden lg:block bg-white rounded-3xl shadow overflow-hidden">
-        <div class="overflow-x-auto">
-          <table class="w-full min-w-[1000px]">
-            <thead class="bg-gray-100 sticky top-0">
-              <tr>
-                <th class="text-left px-6 py-5">Descrição</th>
-                <th class="text-left px-6 py-5">Categoria</th>
-                <th class="text-right px-6 py-5">Valor</th>
-                <th class="text-center px-6 py-5">Vencimento</th>
-                <th class="text-center px-6 py-5">Parcela</th>
-                <th class="text-center px-6 py-5">Status</th>
-                <th class="text-center px-6 py-5 w-40">Ações</th>
-              </tr>
-            </thead>
-            <tbody id="tabelaDesktop" class="divide-y"></tbody>
-          </table>
+  <div class="max-w-7xl mx-auto px-6 py-8">
+
+    <!-- Cards Resumo -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+      <div class="bg-white rounded-3xl shadow p-6 card-hover">
+        <p class="text-gray-500 text-sm">Total Geral</p>
+        <h2 id="totalGeral" class="text-3xl font-bold text-gray-800 mt-1">R$ 0,00</h2>
+      </div>
+      <div class="bg-white rounded-3xl shadow p-6 card-hover">
+        <p class="text-gray-500 text-sm">Pendentes</p>
+        <h2 id="totalPendente" class="text-3xl font-bold text-red-600 mt-1">R$ 0,00</h2>
+      </div>
+      <div class="bg-white rounded-3xl shadow p-6 card-hover">
+        <p class="text-gray-500 text-sm">Pagas</p>
+        <h2 id="totalPago" class="text-3xl font-bold text-green-600 mt-1">R$ 0,00</h2>
+      </div>
+      <div class="bg-white rounded-3xl shadow p-6 card-hover">
+        <p class="text-gray-500 text-sm">Lançamentos</p>
+        <h2 id="qtdParcelas" class="text-3xl font-bold text-indigo-600 mt-1">0</h2>
+      </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="bg-white p-5 rounded-3xl shadow mb-8 flex flex-wrap gap-4 items-center">
+      <select id="filtroMes" onchange="filtrar()" class="border border-gray-300 rounded-2xl px-5 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        <option value="">Todos os meses</option>
+      </select>
+      <select id="filtroCategoria" onchange="filtrar()" class="border border-gray-300 rounded-2xl px-5 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        <option value="">Todas as categorias</option>
+      </select>
+      <select id="filtroStatus" onchange="filtrar()" class="border border-gray-300 rounded-2xl px-5 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        <option value="">Todos os status</option>
+        <option value="pago">Pagas</option>
+        <option value="pendente">Pendentes</option>
+      </select>
+      <button onclick="limparFiltros()" class="ml-auto text-gray-500 hover:text-red-600 flex items-center gap-2">
+        <i class="fas fa-rotate"></i> Limpar
+      </button>
+    </div>
+
+    <!-- Desktop Table -->
+    <div id="viewDesktop" class="hidden lg:block bg-white rounded-3xl shadow overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-[1000px]">
+          <thead class="bg-gray-100 sticky top-0">
+            <tr>
+              <th class="text-left px-6 py-5">Descrição</th>
+              <th class="text-left px-6 py-5">Categoria</th>
+              <th class="text-right px-6 py-5">Valor</th>
+              <th class="text-center px-6 py-5">Vencimento</th>
+              <th class="text-center px-6 py-5">Parcela</th>
+              <th class="text-center px-6 py-5">Status</th>
+              <th class="text-center px-6 py-5 w-40">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaDesktop" class="divide-y"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Mobile Cards -->
+    <div id="viewMobile" class="lg:hidden space-y-4">
+      <div id="cardsContainer" class="space-y-4"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal (mesmo de antes) -->
+<div id="modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[95vh] overflow-hidden flex flex-col">
+    <div class="px-8 py-6 border-b flex items-center justify-between bg-gray-50 rounded-t-3xl">
+      <h2 id="modalTitle" class="text-2xl font-bold flex items-center gap-3">
+        <i class="fas fa-plus-circle text-indigo-600"></i> Nova Despesa
+      </h2>
+      <button onclick="fecharModal()" class="text-3xl text-gray-400 hover:text-gray-600">×</button>
+    </div>
+    <div class="flex-1 p-8 overflow-y-auto">
+      <form id="formDespesa" class="space-y-6">
+        <input type="hidden" id="editId">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Descrição</label>
+          <input type="text" id="descricao" required class="w-full px-5 py-3.5 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-indigo-500">
         </div>
-      </div>
-
-      <!-- Mobile -->
-      <div id="viewMobile" class="lg:hidden space-y-4">
-        <div id="cardsContainer" class="space-y-4"></div>
-      </div>
+        <div class="grid grid-cols-2 gap-5">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">Valor da parcela</label>
+            <input type="number" id="valor" step="0.01" required class="w-full px-5 py-3.5 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-indigo-500">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">Parcelas</label>
+            <input type="number" id="parcelas" value="1" min="1" required class="w-full px-5 py-3.5 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-indigo-500">
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Categoria</label>
+          <select id="categoria_id" required class="w-full px-5 py-3.5 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-indigo-500"></select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Data da 1ª parcela</label>
+          <input type="date" id="data_vencimento" required class="w-full px-5 py-3.5 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Observações</label>
+          <textarea id="observacoes" rows="3" class="w-full px-5 py-3.5 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-indigo-500"></textarea>
+        </div>
+      </form>
+    </div>
+    <div class="p-6 border-t bg-gray-50 rounded-b-3xl flex gap-3">
+      <button onclick="fecharModal()" class="flex-1 py-4 border border-gray-300 rounded-2xl hover:bg-gray-100">Cancelar</button>
+      <button onclick="salvarDespesa()" class="flex-1 py-4 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700">Salvar</button>
     </div>
   </div>
+</div>
 
-  <!-- Modal -->
-  <div id="modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[95vh] overflow-hidden flex flex-col">
-      <div class="px-8 py-6 border-b flex items-center justify-between bg-gray-50 rounded-t-3xl">
-        <h2 id="modalTitle" class="text-2xl font-bold flex items-center gap-3">
-          <i class="fas fa-plus-circle text-indigo-600"></i> Nova Despesa
-        </h2>
-        <button onclick="fecharModal()" class="text-3xl text-gray-400 hover:text-gray-600">×</button>
-      </div>
-      <div class="flex-1 p-8 overflow-y-auto">
-        <form id="formDespesa" class="space-y-6">
-          <input type="hidden" id="editId">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1.5">Descrição</label>
-            <input type="text" id="descricao" required
-              class="w-full px-5 py-3.5 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-indigo-500">
-          </div>
-          <div class="grid grid-cols-2 gap-5">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1.5">Valor da parcela</label>
-              <input type="number" id="valor" step="0.01" required
-                class="w-full px-5 py-3.5 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-indigo-500">
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1.5">Parcelas</label>
-              <input type="number" id="parcelas" value="1" min="1" required
-                class="w-full px-5 py-3.5 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-indigo-500">
-            </div>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1.5">Categoria</label>
-            <select id="categoria_id" required
-              class="w-full px-5 py-3.5 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-indigo-500"></select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1.5">Data da 1ª parcela</label>
-            <input type="date" id="data_vencimento" required
-              class="w-full px-5 py-3.5 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-indigo-500">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1.5">Observações</label>
-            <textarea id="observacoes" rows="3"
-              class="w-full px-5 py-3.5 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-indigo-500"></textarea>
-          </div>
-        </form>
-      </div>
-      <div class="p-6 border-t bg-gray-50 rounded-b-3xl flex gap-3">
-        <button onclick="fecharModal()"
-          class="flex-1 py-4 border border-gray-300 rounded-2xl hover:bg-gray-100">Cancelar</button>
-        <button onclick="salvarDespesa()"
-          class="flex-1 py-4 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700">Salvar</button>
-      </div>
-    </div>
-  </div>
+<script>
+// ==================== Configuração Global ====================
+let transacoes = [];
+let categorias = [];
+const token = localStorage.getItem('token');
 
-  <script>
-    // ==================== Variáveis ====================
-    let transacoes = [];
-    let categorias = [];
+// Verifica se o usuário está logado
+if (!token) {
+  window.location.href = '/inicio.html';
+}
 
-    // ==================== Formatação ====================
-    function formatarMoeda(v) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v); }
-    function formatarData(dataStr) {
-      return new Date(dataStr).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+// Configura Authorization header padrão
+function getHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`
+  };
+}
+
+// ==================== Formatação ====================
+function formatarMoeda(v) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v); }
+function formatarData(dataStr) {
+  return new Date(dataStr).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' });
+}
+
+// ==================== Carregar Dados ====================
+
+// ==================== Carregar Dados ====================
+async function carregarDados() {
+  try {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (user.nome || user.whatsapp) {
+      document.getElementById('userName').textContent = user.nome || user.whatsapp;
     }
 
-    // ==================== Carregar Dados ====================
-    async function carregarDados() {
-      const [resT, resC] = await Promise.all([fetch('/api/transacoes'), fetch('/api/categorias')]);
-      transacoes = await resT.json();
-      categorias = await resC.json();
+    // Carrega transações e categorias com token
+    const [resT, resC] = await Promise.all([
+      fetch('/api/transacoes', { headers: getHeaders() }),
+      fetch('/api/categorias', { headers: getHeaders() })
+    ]);
 
-      popularFiltrosMeses();
-      popularFiltrosCategorias();
-
-      // Seleciona o mês atual e já aplica o filtro
-      selecionarMesCorrente();
-      filtrar();                    // ← Esta linha corrige o problema de não carregar os cards/tabela
+    if (!resT.ok || !resC.ok) {
+      throw new Error('Erro de autenticação');
     }
 
-    function popularFiltrosMeses() {
-      const select = document.getElementById('filtroMes');
-      select.innerHTML = '<option value="">Todos os meses</option>';
-      const meses = [...new Set(transacoes.map(t => t.data_vencimento.substring(0, 7)))].sort();
-      meses.forEach(m => {
-        const [ano, mesNum] = m.split('-');
-        const nome = new Date(ano, mesNum - 1).toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
-        select.innerHTML += `<option value="${m}">${nome.charAt(0).toUpperCase() + nome.slice(1)}</option>`;
-      });
-    }
+    transacoes = await resT.json();
+    categorias = await resC.json();
 
-    function selecionarMesCorrente() {
-      const select = document.getElementById('filtroMes');
-      const mesAtual = new Date().toISOString().substring(0, 7);
-      if ([...select.options].some(opt => opt.value === mesAtual)) {
-        select.value = mesAtual;
-      }
-    }
+    popularFiltrosMeses();
+    popularFiltrosCategorias();
+    selecionarMesCorrente();
+    filtrar();                    // Aplica filtro automaticamente
 
-    function popularFiltrosCategorias() {
-      const filtro = document.getElementById('filtroCategoria');
-      const modal = document.getElementById('categoria_id');
-      filtro.innerHTML = '<option value="">Todas as categorias</option>';
-      modal.innerHTML = '<option value="">Selecione...</option>';
-      categorias.forEach(c => {
-        filtro.innerHTML += `<option value="${c.id}">${c.nome}</option>`;
-        modal.innerHTML += `<option value="${c.id}">${c.nome}</option>`;
-      });
+  } catch (err) {
+    console.error("Erro ao carregar dados:", err);
+    if (err.message.includes('401') || err.message.includes('403')) {
+      alert("Sua sessão expirou. Faça login novamente.");
+      logout();
     }
+  }
+}
 
-    // ==================== Atualizar Resumo ====================
-    function atualizarResumo(dados) {
-      let total = 0, pendente = 0, pago = 0;
-      dados.forEach(t => {
-        total += t.valor;
-        if (t.data_pagamento) pago += t.valor;
-        else pendente += t.valor;
-      });
-      document.getElementById('totalGeral').textContent = formatarMoeda(total);
-      document.getElementById('totalPendente').textContent = formatarMoeda(pendente);
-      document.getElementById('totalPago').textContent = formatarMoeda(pago);
-      document.getElementById('qtdParcelas').textContent = dados.length;
-    }
 
-    // ==================== Renderização ====================
-    function renderizarTudo(dadosFiltrados = null) {
-      const dados = dadosFiltrados || transacoes;
-      renderizarDesktop(dados);
-      renderizarMobile(dados);
-    }
+// ==================== Filtros ====================
+function popularFiltrosMeses() {
+  const select = document.getElementById('filtroMes');
+  select.innerHTML = '<option value="">Todos os meses</option>';
+  const meses = [...new Set(transacoes.map(t => t.data_vencimento.substring(0,7)))].sort();
+  meses.forEach(m => {
+    const [ano, mesNum] = m.split('-');
+    const nome = new Date(ano, mesNum-1).toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+    select.innerHTML += `<option value="${m}">${nome.charAt(0).toUpperCase() + nome.slice(1)}</option>`;
+  });
+}
 
-    function renderizarDesktop(dados) { /* mesmo código anterior */
-      const tbody = document.getElementById('tabelaDesktop');
-      tbody.innerHTML = '';
-      dados.forEach(t => {
-        const pago = !!t.data_pagamento;
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
+function selecionarMesCorrente() {
+  const select = document.getElementById('filtroMes');
+  const mesAtual = new Date().toISOString().substring(0, 7);
+  if ([...select.options].some(opt => opt.value === mesAtual)) {
+    select.value = mesAtual;
+  }
+}
+
+function popularFiltrosCategorias() {
+  const filtro = document.getElementById('filtroCategoria');
+  const modal = document.getElementById('categoria_id');
+  
+  filtro.innerHTML = '<option value="">Todas as categorias</option>';
+  modal.innerHTML = '<option value="">Selecione uma categoria</option>';
+
+  categorias.forEach(c => {
+    const opt1 = document.createElement('option');
+    opt1.value = c.id;
+    opt1.textContent = c.nome;
+    filtro.appendChild(opt1);
+
+    const opt2 = opt1.cloneNode(true);
+    modal.appendChild(opt2);
+  });
+}
+
+function filtrar() {
+  const mes = document.getElementById('filtroMes').value;
+  const cat = document.getElementById('filtroCategoria').value;
+  const status = document.getElementById('filtroStatus').value;
+
+  let filtrados = transacoes;
+  if (mes) filtrados = filtrados.filter(t => t.data_vencimento.startsWith(mes));
+  if (cat) filtrados = filtrados.filter(t => t.categoria_id == cat);
+  if (status === 'pago') filtrados = filtrados.filter(t => t.data_pagamento);
+  if (status === 'pendente') filtrados = filtrados.filter(t => !t.data_pagamento);
+
+  renderizarTudo(filtrados);
+  atualizarResumo(filtrados);
+}
+
+// ==================== Renderização, Modal, etc. (mantidos) ====================
+function atualizarResumo(dados) { /* mesmo código anterior */ 
+  let total = 0, pendente = 0, pago = 0;
+  dados.forEach(t => {
+    total += t.valor;
+    if (t.data_pagamento) pago += t.valor;
+    else pendente += t.valor;
+  });
+  document.getElementById('totalGeral').textContent = formatarMoeda(total);
+  document.getElementById('totalPendente').textContent = formatarMoeda(pendente);
+  document.getElementById('totalPago').textContent = formatarMoeda(pago);
+  document.getElementById('qtdParcelas').textContent = dados.length;
+}
+
+function renderizarTudo(dadosFiltrados = null) {
+  const dados = dadosFiltrados || transacoes;
+  renderizarDesktop(dados);
+  renderizarMobile(dados);
+}
+
+/* renderizarDesktop, renderizarMobile, editarDespesa, salvarDespesa, marcarComoPago, excluirDespesa, abrirModal, fecharModal, limparFiltros */
+function renderizarDesktop(dados) {
+  const tbody = document.getElementById('tabelaDesktop');
+  tbody.innerHTML = '';
+  dados.forEach(t => {
+    const pago = !!t.data_pagamento;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
       <td class="px-6 py-5">${t.descricao}</td>
-      <td class="px-6 py-5"><span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full" style="background:${t.cor || '#6b7280'}"></span>${t.categoria_nome || 'Sem cat.'}</span></td>
+      <td class="px-6 py-5"><span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full" style="background:${t.cor||'#6b7280'}"></span>${t.categoria_nome||'Sem cat.'}</span></td>
       <td class="px-6 py-5 text-right font-semibold">${formatarMoeda(t.valor)}</td>
       <td class="px-6 py-5 text-center">${formatarData(t.data_vencimento)}</td>
       <td class="px-6 py-5 text-center">${t.parcela_atual}/${t.parcelas_total}</td>
-      <td class="px-6 py-5 text-center"><span class="px-4 py-1 text-xs font-medium rounded-full ${pago ? 'status-pago' : 'status-pendente'}">${pago ? 'PAGO' : 'PENDENTE'}</span></td>
+      <td class="px-6 py-5 text-center"><span class="px-4 py-1 text-xs font-medium rounded-full ${pago?'status-pago':'status-pendente'}">${pago?'PAGO':'PENDENTE'}</span></td>
       <td class="px-6 py-5 text-center space-x-4">
         ${!pago ? `<button onclick="marcarComoPago(${t.id})" class="text-green-600 hover:text-green-700"><i class="fas fa-check"></i></button>` : ''}
         <button onclick="editarDespesa(${t.id})" class="text-blue-600 hover:text-blue-700"><i class="fas fa-edit"></i></button>
         <button onclick="excluirDespesa(${t.id})" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
       </td>
     `;
-        tbody.appendChild(tr);
-      });
-    }
+    tbody.appendChild(tr);
+  });
+}
 
-    function renderizarMobile(dados) { /* mesmo código anterior */
-      const container = document.getElementById('cardsContainer');
-      container.innerHTML = '';
-      dados.forEach(t => {
-        const pago = !!t.data_pagamento;
-        const card = document.createElement('div');
-        card.className = `despesa-card bg-white rounded-3xl shadow p-6 border-l-4 ${pago ? 'border-green-500' : 'border-red-500'}`;
-        card.innerHTML = `
+function renderizarMobile(dados) {
+  const container = document.getElementById('cardsContainer');
+  container.innerHTML = '';
+  dados.forEach(t => {
+    const pago = !!t.data_pagamento;
+    const card = document.createElement('div');
+    card.className = `despesa-card bg-white rounded-3xl shadow p-6 border-l-4 ${pago ? 'border-green-500' : 'border-red-500'}`;
+    card.innerHTML = `
       <div class="flex justify-between">
         <div class="flex-1">
           <h3 class="font-semibold text-lg">${t.descricao}</h3>
           <p class="text-sm text-gray-500 mt-1 flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full" style="background:${t.cor || '#6b7280'}"></span>
-            ${t.categoria_nome || 'Sem categoria'}
+            <span class="w-2 h-2 rounded-full" style="background:${t.cor||'#6b7280'}"></span>
+            ${t.categoria_nome||'Sem categoria'}
           </p>
         </div>
         <div class="text-right"><p class="font-bold text-2xl text-indigo-700">${formatarMoeda(t.valor)}</p></div>
@@ -324,143 +351,111 @@
         </div>
       </div>
     `;
-        container.appendChild(card);
+    container.appendChild(card);
+  });
+}
+
+// ==================== Ações ====================
+async function marcarComoPago(id) {
+  if (!confirm('Marcar como paga?')) return;
+  await fetch(`/api/transacoes/${id}/pagar`, {
+    method: 'PUT',
+    headers: getHeaders(),
+    body: JSON.stringify({ data_pagamento: new Date().toISOString().split('T')[0] })
+  });
+  carregarDados();
+}
+
+async function editarDespesa(id) {
+  const despesa = transacoes.find(t => t.id === id);
+  if (!despesa) return;
+
+  document.getElementById('modalTitle').innerHTML = `<i class="fas fa-edit text-indigo-600"></i> Editar Despesa`;
+  document.getElementById('editId').value = despesa.id;
+  document.getElementById('descricao').value = despesa.descricao;
+  document.getElementById('valor').value = despesa.valor;
+  document.getElementById('parcelas').value = despesa.parcelas_total;
+  document.getElementById('categoria_id').value = despesa.categoria_id;
+  document.getElementById('data_vencimento').value = despesa.data_vencimento;
+  document.getElementById('observacoes').value = despesa.observacoes || '';
+
+  abrirModal();
+}
+
+async function excluirDespesa(id) {
+  const despesa = transacoes.find(t => t.id === id);
+  if (!despesa) return;
+
+  const escolha = confirm("OK = Apenas esta parcela\nCancelar = Todas as parcelas do grupo");
+  const excluirTodas = !escolha;
+  const url = excluirTodas && despesa.grupo_parcela_id 
+    ? `/api/transacoes/grupo/${despesa.grupo_parcela_id}` 
+    : `/api/transacoes/${id}`;
+
+  await fetch(url, { method: 'DELETE', headers: getHeaders() });
+  carregarDados();
+}
+
+async function salvarDespesa() {
+  const editId = document.getElementById('editId').value;
+  const dados = {
+    descricao: document.getElementById('descricao').value.trim(),
+    valor: parseFloat(document.getElementById('valor').value),
+    data_vencimento: document.getElementById('data_vencimento').value,
+    categoria_id: parseInt(document.getElementById('categoria_id').value),
+    parcelas_total: parseInt(document.getElementById('parcelas').value),
+    observacoes: document.getElementById('observacoes').value.trim()
+  };
+
+  if (!dados.categoria_id) return alert("Selecione uma categoria.");
+
+  try {
+    if (editId) {
+      await fetch(`/api/transacoes/${editId}`, {
+        method: 'PUT',
+        headers: getHeaders(),
+        body: JSON.stringify(dados)
+      });
+    } else {
+      await fetch('/api/transacoes', {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify(dados)
       });
     }
 
-    // ==================== Editar (corrigido) ====================
-    async function editarDespesa(id) {
-      const despesa = transacoes.find(t => t.id === id);
-      if (!despesa) return;
+    fecharModal();
+    document.getElementById('formDespesa').reset();
+    document.getElementById('editId').value = '';
+    carregarDados();
+  } catch (err) {
+    alert("Erro ao salvar. Verifique se está logado.");
+  }
+}
 
-      document.getElementById('modalTitle').innerHTML = `<i class="fas fa-edit text-indigo-600"></i> Editar Despesa`;
-      document.getElementById('editId').value = despesa.id;
-      document.getElementById('descricao').value = despesa.descricao;
-      document.getElementById('valor').value = despesa.valor;
-      document.getElementById('parcelas').value = despesa.parcelas_total;
-      document.getElementById('categoria_id').value = despesa.categoria_id;
-      document.getElementById('data_vencimento').value = despesa.data_vencimento;
-      document.getElementById('observacoes').value = despesa.observacoes || '';
+function abrirModal() {
+  document.getElementById('modal').classList.remove('hidden');
+  document.getElementById('modal').classList.add('flex');
+}
 
-      abrirModal();
-    }
+function fecharModal() {
+  document.getElementById('modal').classList.add('hidden');
+  document.getElementById('modal').classList.remove('flex');
+  document.getElementById('editId').value = '';
+  document.getElementById('modalTitle').innerHTML = `<i class="fas fa-plus-circle text-indigo-600"></i> Nova Despesa`;
+}
 
-    // ==================== Salvar (Nova ou Editar) ====================
-    async function salvarDespesa() {
-      const editId = document.getElementById('editId').value;
-      const dados = {
-        descricao: document.getElementById('descricao').value.trim(),
-        valor: parseFloat(document.getElementById('valor').value),
-        data_vencimento: document.getElementById('data_vencimento').value,
-        categoria_id: parseInt(document.getElementById('categoria_id').value),
-        parcelas_total: parseInt(document.getElementById('parcelas').value),
-        observacoes: document.getElementById('observacoes').value.trim()
-      };
+function logout() {
+  if (confirm("Deseja realmente sair?")) {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '/inicio.html';
+  }
+}
 
-      if (!dados.categoria_id) return alert("Selecione uma categoria.");
-
-      if (editId) {
-        // EDITAR
-        await fetch(`/api/transacoes/${editId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(dados)
-        });
-      } else {
-        // NOVA
-        await fetch('/api/transacoes', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(dados)
-        });
-      }
-
-      fecharModal();
-      document.getElementById('formDespesa').reset();
-      document.getElementById('editId').value = '';
-      carregarDados();
-    }
-
-    // ==================== Outras funções (marcar pago, excluir, filtrar, etc.) ====================
-    async function marcarComoPago(id) {
-      if (!confirm('Marcar como paga?')) return;
-      await fetch(`/api/transacoes/${id}/pagar`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data_pagamento: new Date().toISOString().split('T')[0] }) });
-      carregarDados();
-    }
-
-    async function excluirDespesa(id) {
-      const despesa = transacoes.find(t => t.id === id);
-      if (!despesa) return;
-      const escolha = confirm("OK = Apenas esta parcela\nCancelar = Todas as parcelas do grupo");
-      const url = (!escolha && despesa.grupo_parcela_id) ? `/api/transacoes/grupo/${despesa.grupo_parcela_id}` : `/api/transacoes/${id}`;
-      await fetch(url, { method: 'DELETE' });
-      carregarDados();
-    }
-
-    function filtrar() {
-      const mes = document.getElementById('filtroMes').value;
-      const cat = document.getElementById('filtroCategoria').value;
-      const status = document.getElementById('filtroStatus').value;
-
-      let filtrados = transacoes;
-      if (mes) filtrados = filtrados.filter(t => t.data_vencimento.startsWith(mes));
-      if (cat) filtrados = filtrados.filter(t => t.categoria_id == cat);
-      if (status === 'pago') filtrados = filtrados.filter(t => t.data_pagamento);
-      if (status === 'pendente') filtrados = filtrados.filter(t => !t.data_pagamento);
-
-      renderizarTudo(filtrados);
-      atualizarResumo(filtrados);
-    }
-
-    function limparFiltros() {
-      document.getElementById('filtroMes').value = '';
-      document.getElementById('filtroCategoria').value = '';
-      document.getElementById('filtroStatus').value = '';
-      renderizarTudo();
-      atualizarResumo(transacoes);
-    }
-
-    function abrirModal() {
-      document.getElementById('modal').classList.remove('hidden');
-      document.getElementById('modal').classList.add('flex');
-    }
-
-    function fecharModal() {
-      document.getElementById('modal').classList.add('hidden');
-      document.getElementById('modal').classList.remove('flex');
-      document.getElementById('editId').value = '';
-      document.getElementById('modalTitle').innerHTML = `<i class="fas fa-plus-circle text-indigo-600"></i> Nova Despesa`;
-    }
-
-    // ==================== Inicialização ====================
-    document.getElementById('formDespesa').addEventListener('submit', (e) => { e.preventDefault(); salvarDespesa(); });
-    window.onload = carregarDados;
-
-    
-    // Registrar Service Worker
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js')
-          .then(reg => {
-            console.log('✅ Service Worker registrado com sucesso!', reg.scope);
-          })
-          .catch(err => {
-            console.log('❌ Falha ao registrar Service Worker:', err);
-          });
-      });
-    }
-
-    // Prompt de instalação (opcional - mostra botão quando possível)
-    let deferredPrompt;
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      console.log('📲 App pode ser instalado!');
-      // Você pode mostrar um botão customizado aqui se quiser
-    });
-  </script>
-
-
+// ==================== Inicialização ====================
+document.getElementById('formDespesa').addEventListener('submit', (e) => { e.preventDefault(); salvarDespesa(); });
+window.onload = carregarDados;
+</script>
 </body>
-
 </html>

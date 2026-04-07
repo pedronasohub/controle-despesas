@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HUB Custos - Entrar</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center">
+  <div class="max-w-md w-full bg-white rounded-3xl shadow-xl p-8">
+    <div class="text-center mb-8">
+      <h1 class="text-4xl font-bold text-indigo-700">HUB Custos</h1>
+      <p class="text-gray-500 mt-2">Controle suas despesas com segurança</p>
+    </div>
+
+    <div id="loginForm">
+      <h2 class="text-2xl font-semibold mb-6 text-center">Entrar</h2>
+      <input type="tel" id="whatsappLogin" placeholder="(00) 00000-0000" class="w-full px-5 py-4 border border-gray-300 rounded-2xl mb-4 text-lg">
+      <input type="password" id="senhaLogin" placeholder="Senha" class="w-full px-5 py-4 border border-gray-300 rounded-2xl mb-6">
+      <button onclick="fazerLogin()" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-semibold text-lg hover:bg-indigo-700">Entrar</button>
+      <p class="text-center mt-6 text-gray-600">Não tem conta? 
+        <span onclick="mostrarCadastro()" class="text-indigo-600 cursor-pointer hover:underline">Cadastre-se</span>
+      </p>
+    </div>
+
+    <div id="cadastroForm" class="hidden">
+      <h2 class="text-2xl font-semibold mb-6 text-center">Criar Conta</h2>
+      <input type="tel" id="whatsappCadastro" placeholder="(00) 00000-0000" class="w-full px-5 py-4 border border-gray-300 rounded-2xl mb-4 text-lg">
+      <input type="text" id="nomeCadastro" placeholder="Nome (opcional)" class="w-full px-5 py-4 border border-gray-300 rounded-2xl mb-4">
+      <input type="password" id="senhaCadastro" placeholder="Senha" class="w-full px-5 py-4 border border-gray-300 rounded-2xl mb-6">
+      <button onclick="fazerCadastro()" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-semibold text-lg hover:bg-indigo-700">Cadastrar</button>
+      <p class="text-center mt-6 text-gray-600">Já tem conta? 
+        <span onclick="mostrarLogin()" class="text-indigo-600 cursor-pointer hover:underline">Faça login</span>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // Máscara simples de WhatsApp
+    function aplicarMascaraWhatsapp(input) {
+      input.addEventListener('input', () => {
+        let valor = input.value.replace(/\D/g, '');
+        if (valor.length > 11) valor = valor.slice(0, 11);
+        if (valor.length > 2) valor = `(${valor.slice(0,2)}) ${valor.slice(2)}`;
+        if (valor.length > 9) valor = valor.slice(0,9) + '-' + valor.slice(9);
+        input.value = valor;
+      });
+    }
+
+    aplicarMascaraWhatsapp(document.getElementById('whatsappLogin'));
+    aplicarMascaraWhatsapp(document.getElementById('whatsappCadastro'));
+
+    async function fazerCadastro() {
+      const whatsapp = document.getElementById('whatsappCadastro').value.replace(/\D/g, '');
+      const senha = document.getElementById('senhaCadastro').value;
+      const nome = document.getElementById('nomeCadastro').value;
+
+      if (!whatsapp || !senha) return alert("WhatsApp e senha são obrigatórios");
+
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ whatsapp, senha, nome })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        alert("Cadastro realizado com sucesso! Faça login.");
+        mostrarLogin();
+      } else {
+        alert(data.error || "Erro ao cadastrar");
+      }
+    }
+
+    async function fazerLogin() {
+      const whatsapp = document.getElementById('whatsappLogin').value.replace(/\D/g, '');
+      const senha = document.getElementById('senhaLogin').value;
+
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ whatsapp, senha })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        window.location.href = '/index.html';
+      } else {
+        alert(data.error || "Erro ao fazer login");
+      }
+    }
+
+    function mostrarCadastro() {
+      document.getElementById('loginForm').classList.add('hidden');
+      document.getElementById('cadastroForm').classList.remove('hidden');
+    }
+
+    function mostrarLogin() {
+      document.getElementById('cadastroForm').classList.add('hidden');
+      document.getElementById('loginForm').classList.remove('hidden');
+    }
+
+    // Se já estiver logado, redireciona direto
+    if (localStorage.getItem('token')) {
+      window.location.href = '/index.html';
+    }
+  </script>
+</body>
+</html>

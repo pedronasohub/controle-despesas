@@ -1,23 +1,35 @@
 const sqlite3 = require('sqlite3').verbose();
-
 const db = new sqlite3.Database('./despesas.db');
 
 function inicializarBanco() {
   db.serialize(() => {
-    // Tabela de Categorias
+    // Tabela de Usuários
     db.run(`
-      CREATE TABLE IF NOT EXISTS categorias (
+      CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nome TEXT NOT NULL UNIQUE,
-        tipo TEXT DEFAULT 'despesa',
-        cor TEXT DEFAULT '#3b82f6'
+        whatsapp TEXT UNIQUE NOT NULL,
+        senha TEXT NOT NULL,
+        nome TEXT,
+        criado_em DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
 
-    // Tabela principal de Transações
+    // ✅ TABELA DE CATEGORIAS (estava faltando!)
+    db.run(`
+      CREATE TABLE IF NOT EXISTS categorias (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nome TEXT NOT NULL,
+        tipo TEXT DEFAULT 'despesa',
+        cor TEXT DEFAULT '#6b7280',
+        criado_em DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Tabela de Transações
     db.run(`
       CREATE TABLE IF NOT EXISTS transacoes (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
         descricao TEXT NOT NULL,
         valor REAL NOT NULL,
         data_vencimento DATE NOT NULL,
@@ -26,14 +38,14 @@ function inicializarBanco() {
         parcelas_total INTEGER DEFAULT 1,
         parcela_atual INTEGER DEFAULT 1,
         grupo_parcela_id TEXT,
-        eh_recorrente BOOLEAN DEFAULT 0,
         observacoes TEXT,
         criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (categoria_id) REFERENCES categorias(id)
+        FOREIGN KEY (categoria_id) REFERENCES categorias(id),
+        FOREIGN KEY (user_id) REFERENCES users(id)
       )
     `);
 
-    // Inserir categorias padrão (se não existirem)
+    // Categorias padrão
     const categoriasPadrao = [
       ['Empréstimos', 'despesa', '#ef4444'],
       ['Educação', 'despesa', '#3b82f6'],
@@ -47,7 +59,7 @@ function inicializarBanco() {
     categoriasPadrao.forEach(cat => stmt.run(cat));
     stmt.finalize();
 
-    console.log('✅ Banco de dados inicializado com novas tabelas!');
+    console.log('✅ Banco inicializado com autenticação de usuários!');
   });
 }
 
